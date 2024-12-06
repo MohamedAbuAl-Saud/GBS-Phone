@@ -42,8 +42,15 @@ echo "#           Designed by @A_Y_TR       #"
 echo "#######################################"
 echo -e "${NC}"
 
-echo -e "${CYAN}Enter the phone number (with country code):${NC}"
-read phone_number
+echo -e "${CYAN}Welcome to the GBS DF - Phone Info Tool!${NC}"
+echo -e "${CYAN}Please enter the phone number with country code (e.g. +201028465886):${NC}"
+
+read -p "$(echo -e ${CYAN}Enter phone number: ${NC})" phone_number
+
+if [[ -z "$phone_number" ]]; then
+    echo -e "${RED}Phone number cannot be empty. Exiting...${NC}"
+    exit 1
+fi
 
 response=$(curl -s "https://api.apilayer.com/number_lookup/validate?number=${phone_number}" -H "apikey: a79531fd472a9e27945e2eeeafdd95ac")
 
