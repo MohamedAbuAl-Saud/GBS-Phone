@@ -15,9 +15,9 @@ print_banner() {
     echo "#                                     #"
     echo "#    ██████╗  ███████╗             #"
     echo "#    ██╔══██  ██╔════╝             #"
-    echo "#    ██║  ██║ █████╗               ##"
-    echo "#    ██   ██║ ██                   ###"
-    echo "#    ██████╔  ██                   ###"
+    echo "#    ██║  ██║ █████╗                #"
+    echo "#    ██   ██║ ██                     #"
+    echo "#    ██████╔  ██                    #"
     echo "#   ╚══════╝ ╚═╝                    #"
     echo "#                                     #"
     echo "#         GBS DF - PHONE INFO TOOL    #"
@@ -44,7 +44,6 @@ fetch_phone_details() {
     echo -e "${CYAN}🔍 Fetching details for phone number: ${WHITE}${phone_number}${NC}"
 
     phone_response=$(curl -s "https://api.apilayer.com/number_verification/validate?access_key=${API_KEY}&number=${phone_number}")
-    ip_response=$(curl -s "http://ip-api.com/json/")
 
     if [[ -z "$phone_response" || "$phone_response" == *"error"* ]]; then
         echo -e "${RED}❌ Failed to fetch details. Check the phone number or API key.${NC}"
@@ -59,15 +58,16 @@ fetch_phone_details() {
     carrier=$(parse_json "$phone_response" "carrier")
     line_type=$(parse_json "$phone_response" "line_type")
 
-    # Parse IP details
+    # Fetch IP for additional details
+    ip_response=$(curl -s "http://ip-api.com/json/")
     ip=$(parse_json "$ip_response" "query")
     lat=$(parse_json "$ip_response" "lat")
     lon=$(parse_json "$ip_response" "lon")
     region=$(parse_json "$ip_response" "regionName")
     city=$(parse_json "$ip_response" "city")
-    timezone=$(parse_json "$ip_response" "timezone")
     isp=$(parse_json "$ip_response" "isp")
 
+    # Display Results
     echo -e "${GREEN}================================================${NC}"
     echo -e "${CYAN}📞 Phone Number Details:${NC}"
     echo -e "${WHITE}Valid: ${GREEN}$valid${NC}"
@@ -84,7 +84,6 @@ fetch_phone_details() {
     echo -e "${WHITE}City: ${GREEN}$city${NC}"
     echo -e "${WHITE}Latitude: ${GREEN}$lat${NC}"
     echo -e "${WHITE}Longitude: ${GREEN}$lon${NC}"
-    echo -e "${WHITE}Timezone: ${GREEN}$timezone${NC}"
     echo -e "${WHITE}ISP: ${GREEN}$isp${NC}"
 
     echo -e "${CYAN}================================================${NC}"
