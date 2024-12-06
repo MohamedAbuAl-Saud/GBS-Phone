@@ -3,7 +3,41 @@
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'
 RED='\033[0;31m'
-NC='\033[0m' 
+NC='\033[0m'
+
+install_dependencies() {
+    echo -e "${CYAN}Checking and installing required dependencies...${NC}"
+    
+    if ! command -v curl &> /dev/null; then
+        echo -e "${RED}curl is not installed. Installing curl...${NC}"
+        if [ -x "$(command -v apt)" ]; then
+            sudo apt update && sudo apt install -y curl
+        elif [ -x "$(command -v pacman)" ]; then
+            sudo pacman -S curl
+        elif [ -x "$(command -v pkg)" ]; then
+            pkg install curl
+        else
+            echo -e "${RED}Unsupported package manager. Please install curl manually.${NC}"
+            exit 1
+        fi
+    fi
+    
+    if ! command -v sed &> /dev/null || ! command -v grep &> /dev/null; then
+        echo -e "${RED}sed or grep is missing. Installing them...${NC}"
+        if [ -x "$(command -v apt)" ]; then
+            sudo apt update && sudo apt install -y sed grep
+        elif [ -x "$(command -v pacman)" ]; then
+            sudo pacman -S sed grep
+        elif [ -x "$(command -v pkg)" ]; then
+            pkg install sed grep
+        else
+            echo -e "${RED}Unsupported package manager. Please install sed and grep manually.${NC}"
+            exit 1
+        fi
+    fi
+}
+
+install_dependencies
 
 clear
 
@@ -22,16 +56,17 @@ echo "#           Designed by @A_Y_TR       #"
 echo "#######################################"
 echo -e "${NC}"
 
-read -p "$(echo -e ${CYAN}Enter the phone number (with country code): ${NC})" phone_number
+echo -e "${CYAN}Enter the phone number (with country code):${NC}"
+read phone_number
 
 response=$(curl -s "https://api.apilayer.com/number_lookup/validate?number=${phone_number}" -H "apikey: a79531fd472a9e27945e2eeeafdd95ac")
 
-valid=$(echo $response | jq -r '.valid')
-country=$(echo $response | jq -r '.country_name')
-country_code=$(echo $response | jq -r '.country_prefix')
-location=$(echo $response | jq -r '.location')
-carrier=$(echo $response | jq -r '.carrier')
-line_type=$(echo $response | jq -r '.line_type')
+valid=$(echo "$response" | grep -o '"valid":[^,]*' | sed 's/"valid"://g' | tr -d '"')
+country=$(echo "$response" | grep -o '"country_name":"[^"]*' | sed 's/"country_name":"//g' | tr -d '"')
+country_code=$(echo "$response" | grep -o '"country_prefix":"[^"]*' | sed 's/"country_prefix":"//g' | tr -d '"')
+location=$(echo "$response" | grep -o '"location":"[^"]*' | sed 's/"location":"//g' | tr -d '"')
+carrier=$(echo "$response" | grep -o '"carrier":"[^"]*' | sed 's/"carrier":"//g' | tr -d '"')
+line_type=$(echo "$response" | grep -o '"line_type":"[^"]*' | sed 's/"line_type":"//g' | tr -d '"')
 checked_at=$(date +"%Y-%m-%d %H:%M:%S")
 
 if [[ "$valid" == "true" ]]; then
@@ -45,12 +80,13 @@ if [[ "$valid" == "true" ]]; then
     echo -e "${CYAN}Checked At:${NC} ${GREEN}$checked_at${NC}"
 
     ip=$(curl -s "https://api.apilayer.com/ip_to_location/ip?ip=auto" -H "apikey: a79531fd472a9e27945e2eeeafdd95ac")
-    ip_address=$(echo $ip | jq -r '.ip')
-    region=$(echo $ip | jq -r '.region')
-    city=$(echo $ip | jq -r '.city')
-    latitude=$(echo $ip | jq -r '.latitude')
-    longitude=$(echo $ip | jq -r '.longitude')
-    isp=$(echo $ip | jq -r '.isp')
+    
+    ip_address=$(echo "$ip" | grep -o '"ip":"[^"]*' | sed 's/"ip":"//g' | tr -d '"')
+    region=$(echo "$ip" | grep -o '"region":"[^"]*' | sed 's/"region":"//g' | tr -d '"')
+    city=$(echo "$ip" | grep -o '"city":"[^"]*' | sed 's/"city":"//g' | tr -d '"')
+    latitude=$(echo "$ip" | grep -o '"latitude":[^,]*' | sed 's/"latitude"://g')
+    longitude=$(echo "$ip" | grep -o '"longitude":[^,]*' | sed 's/"longitude"://g')
+    isp=$(echo "$ip" | grep -o '"isp":"[^"]*' | sed 's/"isp":"//g' | tr -d '"')
 
     echo -e "${CYAN}🌍 Location Details:${NC}"
     echo -e "${CYAN}IP Address:${NC} ${GREEN}$ip_address${NC}"
