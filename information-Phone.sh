@@ -13,9 +13,9 @@ print_banner() {
     echo -e "${YELLOW}"
     echo "##############################################"
     echo "#                                            #"
-    echo "#      ${CYAN}🌟 GBS DF - PHONE INFO TOOL 🌟${YELLOW}       #"
+    echo "#      ${CYAN}🌟 GBS DF - PHONE INFO TOOL    #"
     echo "#                                            #"
-    echo "#        ${GREEN}📱 By @A_Y_TR - 2024 📱${YELLOW}          #"
+    echo "#        ${GREEN}📱 By @A_Y_TR - 2024 📱     #"
     echo "##############################################"
     echo -e "${NC}"
 }
