@@ -37,8 +37,7 @@ If you want to install them manually, follow these steps:
 
 #### **For Linux**
 ```bash
-sudo apt update
-sudo apt install -y curl jq
+sudo apt install jq
 git clone https://github.com/MohamedAbuAl-Saud/GBS-Phone
 cd GBS-Phone
 chmod +x information-Phone.sh
