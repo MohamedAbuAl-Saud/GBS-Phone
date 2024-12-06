@@ -10,13 +10,19 @@ NC='\033[0m'
 API_KEY="a79531fd472a9e27945e2eeeafdd95ac"
 
 print_banner() {
-    echo -e "${YELLOW}"
-    echo "##############################################"
-    echo "#                                            #"
-    echo "#      ${CYAN}🌟 GBS DF - PHONE INFO TOOL    #"
-    echo "#                                            #"
-    echo "#        ${GREEN}📱 By @A_Y_TR - 2024 📱     #"
-    echo "##############################################"
+    echo -e "${CYAN}"
+    echo "############################################"
+    echo "#                                          #"
+    echo "#    ██████╗  ███████╗                  #"
+    echo "#    ██╔══██  ██╔════╝                  #"
+    echo "#    ██║  ██║ █████╗                     #"
+    echo "#    ██   ██║ ██                          #"
+    echo "#    ██████╔  ██                         #"
+    echo "#   ╚══════╝ ╚═╝                         #"
+    echo "#                                          #"
+    echo "#               GBS DF - PHONE INFO TOOL   #"
+    echo "#                Designed by @A_Y_TR       #"
+    echo "#############################################"
     echo -e "${NC}"
 }
 
@@ -26,12 +32,11 @@ check_dependencies() {
         echo -e "${RED}❌ curl is not installed. Installing...${NC}"
         sudo apt update && sudo apt install -y curl || pkg install curl -y
     fi
-
-    if ! command -v jq &>/dev/null; then
-        echo -e "${RED}❌ jq is not installed. Installing...${NC}"
-        sudo apt update && sudo apt install -y jq || pkg install jq -y
-    fi
     echo -e "${GREEN}✅ All dependencies are installed!${NC}"
+}
+
+parse_json() {
+    echo "$1" | grep -o "\"$2\":\"[^\"]*" | sed -E "s/\"$2\":\"//"
 }
 
 fetch_phone_details() {
@@ -46,22 +51,24 @@ fetch_phone_details() {
         exit 1
     fi
 
-    valid=$(echo "$phone_response" | jq -r '.valid')
-    country=$(echo "$phone_response" | jq -r '.country_name')
-    country_code=$(echo "$phone_response" | jq -r '.country_code')
-    location=$(echo "$phone_response" | jq -r '.location')
-    carrier=$(echo "$phone_response" | jq -r '.carrier')
-    line_type=$(echo "$phone_response" | jq -r '.line_type')
+    # Parse phone details
+    valid=$(parse_json "$phone_response" "valid")
+    country=$(parse_json "$phone_response" "country_name")
+    country_code=$(parse_json "$phone_response" "country_code")
+    location=$(parse_json "$phone_response" "location")
+    carrier=$(parse_json "$phone_response" "carrier")
+    line_type=$(parse_json "$phone_response" "line_type")
 
-    ip=$(echo "$ip_response" | jq -r '.query')
-    lat=$(echo "$ip_response" | jq -r '.lat')
-    lon=$(echo "$ip_response" | jq -r '.lon')
-    region=$(echo "$ip_response" | jq -r '.regionName')
-    city=$(echo "$ip_response" | jq -r '.city')
-    timezone=$(echo "$ip_response" | jq -r '.timezone')
-    isp=$(echo "$ip_response" | jq -r '.isp')
+    # Parse IP details
+    ip=$(parse_json "$ip_response" "query")
+    lat=$(parse_json "$ip_response" "lat")
+    lon=$(parse_json "$ip_response" "lon")
+    region=$(parse_json "$ip_response" "regionName")
+    city=$(parse_json "$ip_response" "city")
+    timezone=$(parse_json "$ip_response" "timezone")
+    isp=$(parse_json "$ip_response" "isp")
 
-    echo -e "${GREEN}=========================================${NC}"
+    echo -e "${GREEN}================================================${NC}"
     echo -e "${CYAN}📞 Phone Number Details:${NC}"
     echo -e "${WHITE}Valid: ${GREEN}$valid${NC}"
     echo -e "${WHITE}Country: ${GREEN}$country${NC}"
@@ -70,7 +77,7 @@ fetch_phone_details() {
     echo -e "${WHITE}Carrier: ${GREEN}$carrier${NC}"
     echo -e "${WHITE}Line Type: ${GREEN}$line_type${NC}"
 
-    echo -e "${CYAN}=========================================${NC}"
+    echo -e "${CYAN}================================================${NC}"
     echo -e "${CYAN}🌍 Location Details:${NC}"
     echo -e "${WHITE}IP Address: ${GREEN}$ip${NC}"
     echo -e "${WHITE}Region: ${GREEN}$region${NC}"
@@ -80,13 +87,13 @@ fetch_phone_details() {
     echo -e "${WHITE}Timezone: ${GREEN}$timezone${NC}"
     echo -e "${WHITE}ISP: ${GREEN}$isp${NC}"
 
-    echo -e "${CYAN}=========================================${NC}"
+    echo -e "${CYAN}================================================${NC}"
     if [[ "$lat" != "null" && "$lon" != "null" ]]; then
-        echo -e "${YELLOW}🌍 View on Google Maps: https://www.google.com/maps/@${lat},${lon},12z${NC}"
+        echo -e "${YELLOW}📍 View Address: https://www.google.com/maps/search/?api=1&query=${lat},${lon}${NC}"
     else
         echo -e "${RED}❌ Unable to determine precise location.${NC}"
     fi
-    echo -e "${GREEN}=========================================${NC}"
+    echo -e "${GREEN}================================================${NC}"
 }
 
 main() {
