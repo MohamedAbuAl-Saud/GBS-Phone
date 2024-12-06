@@ -1,106 +1,83 @@
 #!/bin/bash
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
 CYAN='\033[0;36m'
-WHITE='\033[1;37m'
-NC='\033[0m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' 
 
-API_KEY="a79531fd472a9e27945e2eeeafdd95ac"
+clear
 
-print_banner() {
-    echo -e "${CYAN}"
-    echo "#######################################"
-    echo "#                                     #"
-    echo "#    ██████╗  ███████╗             #"
-    echo "#    ██╔══██  ██╔════╝             #"
-    echo "#    ██║  ██║ █████╗                #"
-    echo "#    ██   ██║ ██                     #"
-    echo "#    ██████╔  ██                    #"
-    echo "#   ╚══════╝ ╚═╝                    #"
-    echo "#                                     #"
-    echo "#         GBS DF - PHONE INFO TOOL    #"
-    echo "#           Designed by @A_Y_TR       #"
-    echo "#######################################"
-    echo -e "${NC}"
-}
+echo -e "${CYAN}"
+echo "#######################################"
+echo "#                                     #"
+echo "#    ██████╗  ███████╗             #"
+echo "#    ██╔══██  ██╔════╝             #"
+echo "#    ██║  ██║ █████╗               #"
+echo "#    ██   ██║ ██                   #"
+echo "#    ██████╔  ██                   #"
+echo "#   ╚══════╝ ╚═╝                    #"
+echo "#                                     #"
+echo "#         GBS DF - PHONE INFO TOOL    #"
+echo "#           Designed by @A_Y_TR       #"
+echo "#######################################"
+echo -e "${NC}"
 
-check_dependencies() {
-    echo -e "${YELLOW}⚙️ Checking dependencies...${NC}"
-    if ! command -v curl &>/dev/null; then
-        echo -e "${RED}❌ curl is not installed. Installing...${NC}"
-        sudo apt update && sudo apt install -y curl || pkg install curl -y
-    fi
-    echo -e "${GREEN}✅ All dependencies are installed!${NC}"
-}
+read -p "$(echo -e ${CYAN}Enter the phone number (with country code): ${NC})" phone_number
 
-parse_json() {
-    echo "$1" | grep -o "\"$2\":\"[^\"]*" | sed -E "s/\"$2\":\"//"
-}
+response=$(curl -s "https://api.apilayer.com/number_lookup/validate?number=${phone_number}" -H "apikey: a79531fd472a9e27945e2eeeafdd95ac")
 
-fetch_phone_details() {
-    local phone_number="$1"
-    echo -e "${CYAN}🔍 Fetching details for phone number: ${WHITE}${phone_number}${NC}"
+valid=$(echo $response | jq -r '.valid')
+country=$(echo $response | jq -r '.country_name')
+country_code=$(echo $response | jq -r '.country_prefix')
+location=$(echo $response | jq -r '.location')
+carrier=$(echo $response | jq -r '.carrier')
+line_type=$(echo $response | jq -r '.line_type')
+checked_at=$(date +"%Y-%m-%d %H:%M:%S")
 
-    phone_response=$(curl -s "https://api.apilayer.com/number_verification/validate?access_key=${API_KEY}&number=${phone_number}")
+if [[ "$valid" == "true" ]]; then
+    echo -e "${GREEN}📞 Phone Number Details:${NC}"
+    echo -e "${CYAN}Valid:${NC} ${GREEN}Yes${NC}"
+    echo -e "${CYAN}Country:${NC} ${GREEN}$country${NC}"
+    echo -e "${CYAN}Country Code:${NC} ${GREEN}$country_code${NC}"
+    echo -e "${CYAN}Location:${NC} ${GREEN}$location${NC}"
+    echo -e "${CYAN}Carrier:${NC} ${GREEN}$carrier${NC}"
+    echo -e "${CYAN}Line Type:${NC} ${GREEN}$line_type${NC}"
+    echo -e "${CYAN}Checked At:${NC} ${GREEN}$checked_at${NC}"
 
-    if [[ -z "$phone_response" || "$phone_response" == *"error"* ]]; then
-        echo -e "${RED}❌ Failed to fetch details. Check the phone number or API key.${NC}"
-        exit 1
-    fi
+    ip=$(curl -s "https://api.apilayer.com/ip_to_location/ip?ip=auto" -H "apikey: a79531fd472a9e27945e2eeeafdd95ac")
+    ip_address=$(echo $ip | jq -r '.ip')
+    region=$(echo $ip | jq -r '.region')
+    city=$(echo $ip | jq -r '.city')
+    latitude=$(echo $ip | jq -r '.latitude')
+    longitude=$(echo $ip | jq -r '.longitude')
+    isp=$(echo $ip | jq -r '.isp')
 
-    # Parse phone details
-    valid=$(parse_json "$phone_response" "valid")
-    country=$(parse_json "$phone_response" "country_name")
-    country_code=$(parse_json "$phone_response" "country_code")
-    location=$(parse_json "$phone_response" "location")
-    carrier=$(parse_json "$phone_response" "carrier")
-    line_type=$(parse_json "$phone_response" "line_type")
-
-    # Fetch IP for additional details
-    ip_response=$(curl -s "http://ip-api.com/json/")
-    ip=$(parse_json "$ip_response" "query")
-    lat=$(parse_json "$ip_response" "lat")
-    lon=$(parse_json "$ip_response" "lon")
-    region=$(parse_json "$ip_response" "regionName")
-    city=$(parse_json "$ip_response" "city")
-    isp=$(parse_json "$ip_response" "isp")
-
-    # Display Results
-    echo -e "${GREEN}================================================${NC}"
-    echo -e "${CYAN}📞 Phone Number Details:${NC}"
-    echo -e "${WHITE}Valid: ${GREEN}$valid${NC}"
-    echo -e "${WHITE}Country: ${GREEN}$country${NC}"
-    echo -e "${WHITE}Country Code: ${GREEN}$country_code${NC}"
-    echo -e "${WHITE}Location: ${GREEN}$location${NC}"
-    echo -e "${WHITE}Carrier: ${GREEN}$carrier${NC}"
-    echo -e "${WHITE}Line Type: ${GREEN}$line_type${NC}"
-
-    echo -e "${CYAN}================================================${NC}"
     echo -e "${CYAN}🌍 Location Details:${NC}"
-    echo -e "${WHITE}IP Address: ${GREEN}$ip${NC}"
-    echo -e "${WHITE}Region: ${GREEN}$region${NC}"
-    echo -e "${WHITE}City: ${GREEN}$city${NC}"
-    echo -e "${WHITE}Latitude: ${GREEN}$lat${NC}"
-    echo -e "${WHITE}Longitude: ${GREEN}$lon${NC}"
-    echo -e "${WHITE}ISP: ${GREEN}$isp${NC}"
+    echo -e "${CYAN}IP Address:${NC} ${GREEN}$ip_address${NC}"
+    echo -e "${CYAN}Region:${NC} ${GREEN}$region${NC}"
+    echo -e "${CYAN}City:${NC} ${GREEN}$city${NC}"
+    echo -e "${CYAN}Latitude:${NC} ${GREEN}$latitude${NC}"
+    echo -e "${CYAN}Longitude:${NC} ${GREEN}$longitude${NC}"
+    echo -e "${CYAN}ISP:${NC} ${GREEN}$isp${NC}"
 
-    echo -e "${CYAN}================================================${NC}"
-    if [[ "$lat" != "null" && "$lon" != "null" ]]; then
-        echo -e "${YELLOW}📍 View Address: https://www.google.com/maps/search/?api=1&query=${lat},${lon}${NC}"
-    else
-        echo -e "${RED}❌ Unable to determine precise location.${NC}"
+    echo -e "${CYAN}📍 View Location:${NC} ${GREEN}https://www.google.com/maps/search/?api=1&query=$latitude,$longitude${NC}"
+
+    read -p "$(echo -e ${CYAN}Would you like to search this number on Truecaller? (y/n): ${NC})" search_truecaller
+
+    if [[ "$search_truecaller" == "y" || "$search_truecaller" == "Y" ]]; then
+        echo -e "${CYAN}🔗 Open Truecaller Search:${NC} ${GREEN}https://www.truecaller.com/search/global/$phone_number${NC}"
     fi
-    echo -e "${GREEN}================================================${NC}"
-}
 
-main() {
-    print_banner
-    check_dependencies
-    echo -e -n "${CYAN}📱 Enter the phone number (with country code): ${NC}"
-    read phone_number
-    fetch_phone_details "$phone_number"
-}
+    read -p "$(echo -e ${CYAN}Would you like to search this number on social media platforms? (y/n): ${NC})" search_social
 
-main
+    if [[ "$search_social" == "y" || "$search_social" == "Y" ]]; then
+        echo -e "${CYAN}🔍 Searching on TikTok:${NC} ${GREEN}https://www.tiktok.com/@$phone_number${NC}"
+        echo -e "${CYAN}🔍 Searching on WhatsApp:${NC} ${GREEN}https://wa.me/$phone_number${NC}"
+        echo -e "${CYAN}🔍 Searching on Facebook:${NC} ${GREEN}https://www.facebook.com/search/top?q=$phone_number${NC}"
+    fi
+else
+    echo -e "${RED}Invalid phone number! Please try again.${NC}"
+fi
+
+echo -e "${CYAN}Thank you for using the GBS DF - Phone Info Tool!${NC}"
+echo -e "${CYAN}User Developer: @A_Y_TR${NC}"
