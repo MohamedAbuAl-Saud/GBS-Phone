@@ -7,7 +7,7 @@ NC='\033[0m'
 
 install_dependencies() {
     echo -e "${CYAN}Checking and installing required dependencies...${NC}"
-    
+
     if ! command -v curl &> /dev/null; then
         echo -e "${RED}curl is not installed. Installing curl...${NC}"
         if [ -x "$(command -v apt)" ]; then
@@ -18,20 +18,6 @@ install_dependencies() {
             pkg install curl
         else
             echo -e "${RED}Unsupported package manager. Please install curl manually.${NC}"
-            exit 1
-        fi
-    fi
-    
-    if ! command -v sed &> /dev/null || ! command -v grep &> /dev/null; then
-        echo -e "${RED}sed or grep is missing. Installing them...${NC}"
-        if [ -x "$(command -v apt)" ]; then
-            sudo apt update && sudo apt install -y sed grep
-        elif [ -x "$(command -v pacman)" ]; then
-            sudo pacman -S sed grep
-        elif [ -x "$(command -v pkg)" ]; then
-            pkg install sed grep
-        else
-            echo -e "${RED}Unsupported package manager. Please install sed and grep manually.${NC}"
             exit 1
         fi
     fi
@@ -98,13 +84,13 @@ if [[ "$valid" == "true" ]]; then
 
     echo -e "${CYAN}📍 View Location:${NC} ${GREEN}https://www.google.com/maps/search/?api=1&query=$latitude,$longitude${NC}"
 
-    read -p "$(echo -e ${CYAN}Would you like to search this number on Truecaller? (y/n): ${NC})" search_truecaller
+    read -p "${CYAN}Would you like to search this number on Truecaller? (y/n):${NC}" search_truecaller
 
     if [[ "$search_truecaller" == "y" || "$search_truecaller" == "Y" ]]; then
         echo -e "${CYAN}🔗 Open Truecaller Search:${NC} ${GREEN}https://www.truecaller.com/search/global/$phone_number${NC}"
     fi
 
-    read -p "$(echo -e ${CYAN}Would you like to search this number on social media platforms? (y/n): ${NC})" search_social
+    read -p "${CYAN}Would you like to search this number on social media platforms? (y/n):${NC}" search_social
 
     if [[ "$search_social" == "y" || "$search_social" == "Y" ]]; then
         echo -e "${CYAN}🔍 Searching on TikTok:${NC} ${GREEN}https://www.tiktok.com/@$phone_number${NC}"
