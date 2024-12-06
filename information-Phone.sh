@@ -12,30 +12,31 @@ API_KEY="a79531fd472a9e27945e2eeeafdd95ac"
 print_banner() {
     echo -e "${YELLOW}"
     echo "##############################################"
-    echo "#       ${CYAN} GBS DF - PHONE SCANNER TOOL ${YELLOW}       #"
-    echo "##############################################"
-    echo "#            ${GREEN} Designed by @A_Y_TR ${YELLOW}          #"
+    echo "#                                            #"
+    echo "#      ${CYAN}🌟 GBS DF - PHONE INFO TOOL 🌟${YELLOW}       #"
+    echo "#                                            #"
+    echo "#        ${GREEN}📱 By @A_Y_TR - 2024 📱${YELLOW}          #"
     echo "##############################################"
     echo -e "${NC}"
 }
 
 check_dependencies() {
-    echo -e "${YELLOW}Checking dependencies...${NC}"
+    echo -e "${YELLOW}⚙️ Checking dependencies...${NC}"
     if ! command -v curl &>/dev/null; then
-        echo -e "${RED}curl is not installed. Installing...${NC}"
+        echo -e "${RED}❌ curl is not installed. Installing...${NC}"
         sudo apt update && sudo apt install -y curl || pkg install curl -y
     fi
 
     if ! command -v jq &>/dev/null; then
-        echo -e "${RED}jq is not installed. Installing...${NC}"
+        echo -e "${RED}❌ jq is not installed. Installing...${NC}"
         sudo apt update && sudo apt install -y jq || pkg install jq -y
     fi
-    echo -e "${GREEN}All dependencies are installed!${NC}"
+    echo -e "${GREEN}✅ All dependencies are installed!${NC}"
 }
 
 fetch_phone_details() {
     local phone_number="$1"
-    echo -e "${CYAN}Fetching details for phone number: ${WHITE}${phone_number}${NC}"
+    echo -e "${CYAN}🔍 Fetching details for phone number: ${WHITE}${phone_number}${NC}"
 
     phone_response=$(curl -s "https://api.apilayer.com/number_verification/validate?access_key=${API_KEY}&number=${phone_number}")
     ip_response=$(curl -s "http://ip-api.com/json/")
@@ -91,7 +92,8 @@ fetch_phone_details() {
 main() {
     print_banner
     check_dependencies
-    read -p "$(echo -e ${CYAN}Enter the phone number (with country code): ${NC})" phone_number
+    echo -e -n "${CYAN}📱 Enter the phone number (with country code): ${NC}"
+    read phone_number
     fetch_phone_details "$phone_number"
 }
 
